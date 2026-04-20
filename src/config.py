@@ -28,11 +28,14 @@ class Settings(BaseSettings):
     # Dedup: skip chunk if nearest neighbor similarity >= this
     dedup_similarity_threshold: float = Field(0.95)
 
-    # Retrieval (used in Phase 2)
-    retrieval_top_k: int = Field(10)
+    # Retrieval
+    retrieval_top_k: int = Field(20)
     rerank_top_n: int = Field(5)
+    rrf_k: int = Field(60)
     dense_weight: float = Field(0.7)
     sparse_weight: float = Field(0.3)
+    reranker_model: str = Field("cross-encoder/ms-marco-MiniLM-L-6-v2")
+    use_reranker: bool = Field(True)
 
     raw_docs_path: str = Field("data/raw")
 
