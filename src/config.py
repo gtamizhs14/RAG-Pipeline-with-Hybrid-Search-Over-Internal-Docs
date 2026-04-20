@@ -1,0 +1,42 @@
+from pydantic import Field
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+    # LLM
+    groq_api_key: str = Field(..., description="Groq API key")
+    groq_model: str = Field("llama3-70b-8192")
+    groq_judge_model: str = Field("llama3-70b-8192")
+
+    # Embeddings — runs locally, swap model name in .env to change
+    embedding_model: str = Field("all-MiniLM-L6-v2")
+    embedding_dimension: int = Field(384)
+
+    # ChromaDB
+    chroma_db_path: str = Field("data/chroma_db")
+    chroma_collection_name: str = Field("documents")
+
+    # BM25
+    bm25_index_path: str = Field("data/bm25_index.pkl")
+
+    # Chunking
+    chunk_size: int = Field(512)
+    chunk_overlap: int = Field(64)
+    # For semantic chunking: similarity below this value = topic boundary
+    semantic_similarity_threshold: float = Field(0.5)
+
+    # Dedup: skip chunk if nearest neighbor similarity >= this
+    dedup_similarity_threshold: float = Field(0.95)
+
+    # Retrieval (used in Phase 2)
+    retrieval_top_k: int = Field(10)
+    rerank_top_n: int = Field(5)
+    dense_weight: float = Field(0.7)
+    sparse_weight: float = Field(0.3)
+
+    raw_docs_path: str = Field("data/raw")
+
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+
+
+settings = Settings()
