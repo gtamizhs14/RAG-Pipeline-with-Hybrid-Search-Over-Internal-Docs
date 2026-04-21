@@ -39,6 +39,14 @@ class Settings(BaseSettings):
 
     raw_docs_path: str = Field("data/raw")
 
+    # Generation
+    # Low temperature (0.1) prioritises factual consistency over creativity.
+    # max_context_chars ~12 000 chars ≈ 3 000 tokens, leaving headroom in the
+    # 8 192-token llama3 context window for the system prompt + generated answer.
+    generation_temperature: float = Field(0.1)
+    generation_max_tokens: int = Field(1024)
+    max_context_chars: int = Field(12_000)
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 
