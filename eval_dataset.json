@@ -1,0 +1,20 @@
+[
+  {
+    "id": "q1",
+    "question": "What is Retrieval-Augmented Generation?",
+    "ground_truth_answer": "Retrieval-Augmented Generation (RAG) is a technique that combines a retrieval system with a language model. The retrieval system fetches relevant documents from a knowledge base, and the language model generates an answer grounded in those documents, reducing hallucination.",
+    "relevant_doc_ids": ["replace_with_your_doc_id"]
+  },
+  {
+    "id": "q2",
+    "question": "What are the main advantages of hybrid search over pure vector search?",
+    "ground_truth_answer": "Hybrid search combines dense vector search (semantic similarity) with sparse keyword search (BM25). This handles both semantic queries and exact keyword matches, improving recall for technical terms, proper nouns, and acronyms that embedding models may not represent well.",
+    "relevant_doc_ids": ["replace_with_your_doc_id"]
+  },
+  {
+    "id": "q3",
+    "question": "How does Reciprocal Rank Fusion work?",
+    "ground_truth_answer": "Reciprocal Rank Fusion (RRF) merges ranked lists from multiple retrievers. Each result gets a score of 1/(k + rank) where k is a constant (typically 60). Scores from all lists are summed per document, and results are re-ranked by combined score. This is robust to score scale differences between retrievers.",
+    "relevant_doc_ids": ["replace_with_your_doc_id"]
+  }
+]
