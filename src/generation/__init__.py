@@ -1,4 +1,15 @@
 from src.generation.pipeline import RAGPipeline
-from src.generation.models import RAGResponse, CitedSource
+from src.generation.models import (
+    CitedSource,
+    VerifiedCitation,
+    AnswerConfidence,
+    RAGResponse,
+)
 
-__all__ = ["RAGPipeline", "RAGResponse", "CitedSource"]
+__all__ = [
+    "RAGPipeline",
+    "CitedSource",
+    "VerifiedCitation",
+    "AnswerConfidence",
+    "RAGResponse",
+]

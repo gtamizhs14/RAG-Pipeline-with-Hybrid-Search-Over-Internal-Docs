@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     generation_max_tokens: int = Field(1024)
     max_context_chars: int = Field(12_000)
 
+    # Retrieval confidence threshold: below this → structured "I don't know"
+    # response without calling the LLM (saves tokens, avoids hallucination).
+    retrieval_confidence_threshold: float = Field(0.3)
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 
