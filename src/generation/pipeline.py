@@ -9,7 +9,7 @@ Full pipeline:
   5. CitationVerifier   → LLM-as-judge: does chunk [n] support its claim?
   6. AnswerConfidenceScorer → composite confidence (retrieval + citations + completeness)
 
-WHY inject dependencies (store, embedder, groq_client) instead of constructing them:
+WHY inject dependencies (store, embedder, llm_client) instead of constructing them:
   FastAPI (Phase 5) will create one RAGPipeline at startup and reuse it across
   requests. If we constructed DocumentStore inside __init__ every time, every
   test instantiation would open a new ChromaDB connection. Injection lets tests
