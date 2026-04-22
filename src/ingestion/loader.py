@@ -6,7 +6,6 @@ Everything downstream (chunker, embedder, BM25) works on strings, so format
 handling is isolated here. Adding a new format only requires one new method.
 """
 
-import hashlib
 import logging
 import re
 from dataclasses import dataclass, field
@@ -108,5 +107,7 @@ class DocumentLoader:
 
     @staticmethod
     def _doc_id(path: Path) -> str:
-        # MD5 of absolute path — stable across content edits, unique per file
-        return hashlib.md5(str(path.resolve()).encode()).hexdigest()[:16]
+        # Filename stem so doc_ids are stable across machines and readable in
+        # eval datasets. Falls back to an MD5 suffix on collision (same stem,
+        # different directories) to keep IDs unique.
+        return path.stem

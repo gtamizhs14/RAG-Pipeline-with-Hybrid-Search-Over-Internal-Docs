@@ -1,20 +1,332 @@
 [
   {
-    "id": "q1",
+    "id": "q01",
     "question": "What is Retrieval-Augmented Generation?",
-    "ground_truth_answer": "Retrieval-Augmented Generation (RAG) is a technique that combines a retrieval system with a language model. The retrieval system fetches relevant documents from a knowledge base, and the language model generates an answer grounded in those documents, reducing hallucination.",
-    "relevant_doc_ids": ["replace_with_your_doc_id"]
+    "ground_truth_answer": "Retrieval-Augmented Generation (RAG) is a technique that improves LLM outputs by grounding them in retrieved external knowledge. Instead of relying solely on model weights, a RAG system retrieves relevant document chunks from a knowledge base and passes them as context to the LLM at inference time.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
   },
   {
-    "id": "q2",
-    "question": "What are the main advantages of hybrid search over pure vector search?",
-    "ground_truth_answer": "Hybrid search combines dense vector search (semantic similarity) with sparse keyword search (BM25). This handles both semantic queries and exact keyword matches, improving recall for technical terms, proper nouns, and acronyms that embedding models may not represent well.",
-    "relevant_doc_ids": ["replace_with_your_doc_id"]
+    "id": "q02",
+    "question": "What are the six stages of a standard RAG pipeline?",
+    "ground_truth_answer": "The six stages are: (1) Ingestion — load, chunk, embed, and index documents; (2) Retrieval — hybrid search using dense and sparse methods; (3) Reranking — cross-encoder re-scores top candidates; (4) Prompt construction — numbered context block injected into system prompt; (5) Generation — LLM produces answer with inline citations; (6) Verification and scoring — LLM-as-judge checks citations and computes confidence.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
   },
   {
-    "id": "q3",
+    "id": "q03",
+    "question": "Why does RAG reduce hallucination compared to a plain LLM?",
+    "ground_truth_answer": "RAG constrains the model to content in retrieved passages rather than relying on patterns encoded in weights during training. The model is instructed to cite every claim with a numbered source, making it easier to detect when the model deviates from the provided context.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q04",
+    "question": "What are the main advantages of RAG over fine-tuning for keeping a model up to date?",
+    "ground_truth_answer": "RAG allows knowledge to be updated by indexing new documents without retraining or fine-tuning the LLM. Fine-tuning requires expensive GPU compute and risks catastrophic forgetting of prior knowledge. RAG separates the knowledge store from the model, making updates cheap and immediate.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q05",
+    "question": "Why is low temperature recommended for RAG generation tasks?",
+    "ground_truth_answer": "Low temperature (e.g. 0.1) prioritises factual consistency over creativity, reducing hallucination variance. For grounded Q&A the model should closely follow the retrieved context rather than generating diverse paraphrases, so high temperature is counterproductive.",
+    "relevant_doc_ids": ["retrieval_augmented_generation", "groq_and_llms"]
+  },
+  {
+    "id": "q06",
+    "question": "Why does hybrid search outperform pure dense retrieval for technical documentation?",
+    "ground_truth_answer": "Dense retrieval excels at semantic matching but struggles with rare technical terms, version numbers, and entity names not well-represented in training data. Sparse BM25 handles exact-match lookups for terms like error codes or library versions. Hybrid search combines both, capturing semantic meaning and exact keyword matches.",
+    "relevant_doc_ids": ["hybrid_search"]
+  },
+  {
+    "id": "q07",
+    "question": "What is BM25 and how does it differ from TF-IDF?",
+    "ground_truth_answer": "BM25 extends TF-IDF with two saturation functions: term frequency saturation (k1 parameter) prevents a term appearing many times from dominating linearly, and document length normalization (b parameter) prevents longer documents from being unfairly penalized. These make BM25 more robust than raw TF-IDF for passage retrieval.",
+    "relevant_doc_ids": ["hybrid_search"]
+  },
+  {
+    "id": "q08",
     "question": "How does Reciprocal Rank Fusion work?",
-    "ground_truth_answer": "Reciprocal Rank Fusion (RRF) merges ranked lists from multiple retrievers. Each result gets a score of 1/(k + rank) where k is a constant (typically 60). Scores from all lists are summed per document, and results are re-ranked by combined score. This is robust to score scale differences between retrievers.",
-    "relevant_doc_ids": ["replace_with_your_doc_id"]
+    "ground_truth_answer": "RRF combines ranked lists from multiple retrievers by computing 1/(k + rank_i) for each document in each list, where k is typically 60. Scores are summed across lists per document and results are re-ranked by combined score. RRF is robust to score scale differences because it operates only on rank positions, not raw scores.",
+    "relevant_doc_ids": ["hybrid_search"]
+  },
+  {
+    "id": "q09",
+    "question": "What is the role of the k constant in Reciprocal Rank Fusion?",
+    "ground_truth_answer": "The k constant (typically 60) dampens the impact of very high ranks. Without it, the top-ranked document would receive a disproportionately large boost. k=60 is the value from the original RRF paper and has been empirically validated across many retrieval benchmarks.",
+    "relevant_doc_ids": ["hybrid_search"]
+  },
+  {
+    "id": "q10",
+    "question": "What embedding model is used in this pipeline and what are its characteristics?",
+    "ground_truth_answer": "The pipeline uses all-MiniLM-L6-v2 from SentenceTransformers. It produces 384-dimensional embeddings, runs on CPU in approximately 5ms per query, weighs about 90MB, and achieves roughly 90% of the retrieval quality of OpenAI's text-embedding-3-small on standard benchmarks.",
+    "relevant_doc_ids": ["hybrid_search", "retrieval_augmented_generation"]
+  },
+  {
+    "id": "q11",
+    "question": "What is the difference between a bi-encoder and a cross-encoder in retrieval?",
+    "ground_truth_answer": "A bi-encoder encodes the query and document independently into separate vectors; similarity is computed via dot product or cosine similarity after encoding. A cross-encoder jointly encodes the query-document pair together, allowing full attention across both — it is more accurate but slower because documents cannot be pre-encoded.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q12",
+    "question": "What is ChromaDB and why is it used in this project?",
+    "ground_truth_answer": "ChromaDB is an open-source embeddable vector database for LLM applications. It stores vectors alongside document text and metadata, uses HNSW for approximate nearest-neighbor search with cosine distance, persists to disk via PersistentClient, and requires no separate server for single-machine deployments — making it ideal for local development and portfolio projects.",
+    "relevant_doc_ids": ["vector_databases"]
+  },
+  {
+    "id": "q13",
+    "question": "What indexing algorithm does ChromaDB use and what are its properties?",
+    "ground_truth_answer": "ChromaDB uses Hierarchical Navigable Small World (HNSW) graphs for approximate nearest-neighbor search. HNSW enables logarithmic-time search, meaning query latency grows very slowly as the index size increases. ChromaDB defaults to cosine distance (distance = 1 minus similarity).",
+    "relevant_doc_ids": ["vector_databases"]
+  },
+  {
+    "id": "q14",
+    "question": "How does deduplication work in the document store?",
+    "ground_truth_answer": "Before adding a new chunk, the system queries ChromaDB for the nearest existing chunk using cosine similarity. If the similarity exceeds a threshold (default 0.95), the chunk is skipped as a near-duplicate. This handles re-ingested documents and near-duplicate content without requiring exact string comparison.",
+    "relevant_doc_ids": ["vector_databases", "retrieval_augmented_generation"]
+  },
+  {
+    "id": "q15",
+    "question": "How does ChromaDB compare to Pinecone for production use?",
+    "ground_truth_answer": "Pinecone is a managed SaaS vector database with zero operational overhead but costs money at scale. ChromaDB can run embedded in-process with no server, making it free and easy for local development and portfolios. For production, Pinecone eliminates infrastructure management while ChromaDB requires self-hosting or using its managed cloud offering.",
+    "relevant_doc_ids": ["vector_databases"]
+  },
+  {
+    "id": "q16",
+    "question": "What retrieval metrics are used to evaluate the pipeline?",
+    "ground_truth_answer": "The pipeline uses Precision@K (fraction of retrieved documents that are relevant), Recall@K (fraction of relevant documents retrieved), Mean Reciprocal Rank (average of 1/rank of first relevant result), NDCG@K (rank-weighted relevance), and Hit Rate (fraction of queries with at least one relevant result in top K).",
+    "relevant_doc_ids": ["llm_evaluation"]
+  },
+  {
+    "id": "q17",
+    "question": "What is Mean Reciprocal Rank (MRR)?",
+    "ground_truth_answer": "MRR is the average of the reciprocal rank of the first relevant document across all queries. If a relevant document appears at rank 1, it contributes 1/1 = 1.0; at rank 2, it contributes 0.5; at rank 3, it contributes 0.33, and so on. MRR focuses on how quickly the system surfaces the first relevant result.",
+    "relevant_doc_ids": ["llm_evaluation"]
+  },
+  {
+    "id": "q18",
+    "question": "What is NDCG and why does it matter for retrieval evaluation?",
+    "ground_truth_answer": "NDCG (Normalized Discounted Cumulative Gain) measures retrieval quality accounting for rank position — a relevant result at rank 1 is worth more than one at rank 5. DCG sums relevance scores discounted by log2(rank+1), and NDCG normalises by the ideal DCG. This rewards systems that put the most relevant results at the top.",
+    "relevant_doc_ids": ["llm_evaluation"]
+  },
+  {
+    "id": "q19",
+    "question": "Why don't retrieval metrics require LLM calls?",
+    "ground_truth_answer": "Retrieval metrics (Precision@K, Recall@K, MRR, NDCG@K) compare retrieved doc_ids against a pre-defined list of relevant_doc_ids from the evaluation dataset. This comparison is pure Python arithmetic — no language model is needed, making retrieval evaluation fast and cheap to run repeatedly.",
+    "relevant_doc_ids": ["llm_evaluation"]
+  },
+  {
+    "id": "q20",
+    "question": "How is the composite confidence score calculated?",
+    "ground_truth_answer": "The composite score is: 0.35 × retrieval_confidence + 0.40 × citation_coverage + 0.25 × completeness_score. Retrieval confidence is the average clamped relevance of retrieved chunks. Citation coverage is the fraction of cited sources verified as SUPPORTED. Completeness is an LLM-as-judge score for whether the answer fully addresses the question.",
+    "relevant_doc_ids": ["llm_evaluation"]
+  },
+  {
+    "id": "q21",
+    "question": "What confidence thresholds define HIGH, MEDIUM, and LOW confidence answers?",
+    "ground_truth_answer": "A composite score of 0.7 or above is HIGH confidence (shown in green). A score between 0.4 and 0.7 is MEDIUM confidence (shown in orange). A score below 0.4 is LOW confidence (shown in red). These thresholds are used by the Streamlit UI to render a traffic-light indicator.",
+    "relevant_doc_ids": ["llm_evaluation"]
+  },
+  {
+    "id": "q22",
+    "question": "What is the difference between faithfulness and factual correctness in RAG evaluation?",
+    "ground_truth_answer": "Faithfulness means the answer only makes claims supported by the retrieved context, regardless of whether that context is itself correct. Factual correctness means the answer is true in the real world. RAG systems are typically evaluated for faithfulness because context is available at eval time, whereas factual correctness requires external ground truth.",
+    "relevant_doc_ids": ["llm_evaluation", "llm_as_judge"]
+  },
+  {
+    "id": "q23",
+    "question": "What is LLM-as-judge evaluation?",
+    "ground_truth_answer": "LLM-as-judge uses one language model to evaluate the outputs of another. It has become the standard approach for automatic RAG evaluation because human evaluation is expensive, and string-matching metrics like BLEU miss paraphrases. A judge model is prompted with the question, answer, and context, and returns a structured score with a reason.",
+    "relevant_doc_ids": ["llm_as_judge"]
+  },
+  {
+    "id": "q24",
+    "question": "What two failure modes does citation verification detect?",
+    "ground_truth_answer": "Citation verification detects: (1) Hallucinated citations — the LLM cites source [3] for a claim, but chunk [3] says nothing about it; and (2) Misattribution — the claim is true but cited from the wrong source. Both make answers look grounded when they are not.",
+    "relevant_doc_ids": ["llm_as_judge"]
+  },
+  {
+    "id": "q25",
+    "question": "Why is JSON output format important for LLM judges?",
+    "ground_truth_answer": "Free-text judge outputs are hard to parse reliably at scale. JSON output allows the application to extract structured fields — score, verdict (SUPPORTED/UNSUPPORTED), and reason — without fragile string parsing. If the judge returns malformed text, the application can fail explicitly rather than silently producing wrong scores.",
+    "relevant_doc_ids": ["llm_as_judge"]
+  },
+  {
+    "id": "q26",
+    "question": "What is self-serving bias in LLM-as-judge evaluation?",
+    "ground_truth_answer": "Self-serving bias occurs when the judge model is the same as the generation model — the model may validate its own outputs rather than objectively assessing them. This effect is small for factual citation verification but larger for subjective quality judgments. Using a stronger or different judge model is preferred for production evaluation.",
+    "relevant_doc_ids": ["llm_as_judge"]
+  },
+  {
+    "id": "q27",
+    "question": "What should an effective judge prompt include?",
+    "ground_truth_answer": "An effective judge prompt should specify: (1) the evaluation criterion being assessed, (2) the evidence the judge may use (context passages, question, answer), (3) the required output format (structured JSON with score and reason), and (4) examples of SUPPORTED vs. UNSUPPORTED verdicts to anchor the judge's interpretation.",
+    "relevant_doc_ids": ["llm_as_judge"]
+  },
+  {
+    "id": "q28",
+    "question": "What is Groq and why is it used in this pipeline?",
+    "ground_truth_answer": "Groq provides low-latency LLM inference using custom Language Processing Units (LPUs). It achieves approximately 500 tokens per second for llama3-70b-8192 — much faster than typical GPU providers. This speed is critical for RAG pipelines where the LLM is called multiple times per query for generation and citation verification.",
+    "relevant_doc_ids": ["groq_and_llms"]
+  },
+  {
+    "id": "q29",
+    "question": "What is the context window of llama3-70b-8192 and how does it constrain the pipeline?",
+    "ground_truth_answer": "llama3-70b-8192 has an 8,192-token context window. The pipeline reserves space for the system prompt (~200 tokens), the user question (~100 tokens), and the generated answer (~500 tokens), leaving approximately 6,000 tokens for retrieved context — enough for about 12 chunks of 500 tokens each. max_context_chars is set to 12,000 characters (~3,000 tokens) to stay well within limits.",
+    "relevant_doc_ids": ["groq_and_llms"]
+  },
+  {
+    "id": "q30",
+    "question": "How many tokens does a typical RAG query consume?",
+    "ground_truth_answer": "A typical RAG query uses: 2,000–4,000 tokens for retrieved context, ~200 tokens for the system prompt, 20–100 tokens for the user question, 200–500 tokens for the generated answer, and ~300 tokens per cited source for citation verification. Total is approximately 3,000–6,000 tokens per query.",
+    "relevant_doc_ids": ["groq_and_llms"]
+  },
+  {
+    "id": "q31",
+    "question": "What does the system prompt for RAG generation instruct the model to do?",
+    "ground_truth_answer": "The system prompt instructs the model to answer only using the numbered sources provided, cite every claim with [n] inline, forbid using prior knowledge not in the sources, and say 'I don't know based on the provided documents' rather than guessing when the sources do not contain enough information.",
+    "relevant_doc_ids": ["groq_and_llms"]
+  },
+  {
+    "id": "q32",
+    "question": "What happens when retrieval confidence falls below the threshold?",
+    "ground_truth_answer": "When the average clamped relevance of retrieved chunks falls below the retrieval_confidence_threshold (default 0.3), the pipeline returns a structured 'I don't know' response without calling the LLM at all. This saves tokens, prevents hallucination, and returns actionable guidance to the caller about checking source documents.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q33",
+    "question": "What chunking strategies does the pipeline support?",
+    "ground_truth_answer": "The pipeline supports three chunking strategies: fixed-size (splits on character count with configurable overlap), recursive-header (splits on Markdown headers first, then by character count), and semantic (embeds each sentence and inserts chunk boundaries where cosine similarity between adjacent sentences drops below a threshold).",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q34",
+    "question": "Why is chunk overlap important in fixed-size chunking?",
+    "ground_truth_answer": "Chunk overlap (e.g. 64 characters) preserves context for sentences that span chunk boundaries. Without overlap, a sentence split exactly at a boundary would lose its first or last words, degrading both embedding quality and the readability of the chunk when displayed as a citation source.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q35",
+    "question": "How does the pipeline prevent duplicate chunks from degrading retrieval quality?",
+    "ground_truth_answer": "Before adding a chunk, the system embeds it and queries ChromaDB for the nearest existing chunk. If the cosine similarity exceeds the dedup threshold (default 0.95), the chunk is skipped. This handles re-ingested documents and near-identical content without exact string comparison, keeping the index clean.",
+    "relevant_doc_ids": ["vector_databases", "retrieval_augmented_generation"]
+  },
+  {
+    "id": "q36",
+    "question": "Why is the BM25 index stored as a pickle file?",
+    "ground_truth_answer": "The rank_bm25 library does not have a native persistence format. Pickling the BM25Okapi object alongside the corpus and doc_ids is the simplest reliable persistence approach. The index is rebuilt from the full corpus on each new batch so IDF scores remain correct as the corpus grows.",
+    "relevant_doc_ids": ["hybrid_search"]
+  },
+  {
+    "id": "q37",
+    "question": "What document formats can the ingestion pipeline handle?",
+    "ground_truth_answer": "The pipeline handles .txt, .md, .html, .htm, and .pdf files. HTML files are parsed with BeautifulSoup (removing navigation, scripts, and style tags). PDFs are parsed page-by-page with pypdf. All formats are normalised to plain text before chunking.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q38",
+    "question": "What is the reranker model used and why was it chosen?",
+    "ground_truth_answer": "The pipeline uses cross-encoder/ms-marco-MiniLM-L-6-v2. It was trained on the MS MARCO passage ranking dataset and is fast (CPU-viable) and strong for passage reranking. Cross-encoders jointly encode query and passage together, allowing full attention between them, which makes them more accurate than bi-encoder similarity for final ranking.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q39",
+    "question": "What is the FastAPI lifespan pattern and why is it used?",
+    "ground_truth_answer": "The lifespan context manager (replacing the deprecated @app.on_event('startup')) initialises the RAGPipeline once when the server starts and holds it alive for the server's lifetime. This avoids the 2–5 second model and ChromaDB load on the first request. The lifespan pattern also works correctly with pytest's AsyncClient for integration tests.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q40",
+    "question": "Why are the API schemas kept separate from the internal pipeline dataclasses?",
+    "ground_truth_answer": "The API schemas are public contracts that must remain stable for callers. Internal dataclasses carry types like SearchResult and VerifiedCitation that reference internal implementation details. Separating them means the internal pipeline can evolve without breaking the API, and the API can be versioned independently of the pipeline logic.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q41",
+    "question": "What does skip_verification do in the pipeline?",
+    "ground_truth_answer": "When skip_verification=True, the pipeline skips the LLM-as-judge citation verification step and uses neutral placeholder confidence values (0.5 for citation coverage and completeness). This reduces latency and LLM token usage, making it suitable for high-throughput evaluation runs where generation metrics are assessed separately.",
+    "relevant_doc_ids": ["retrieval_augmented_generation", "llm_as_judge"]
+  },
+  {
+    "id": "q42",
+    "question": "What is the purpose of the GET /api/v1/documents endpoint?",
+    "ground_truth_answer": "The /documents endpoint lists all documents currently indexed in the vector store. It returns the total document count, total chunk count, and per-document information including doc_id, source path, and chunk count. This allows the Streamlit UI and API consumers to inspect what has been indexed without querying ChromaDB directly.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q43",
+    "question": "How does the POST /api/v1/ingest endpoint handle uploaded files?",
+    "ground_truth_answer": "The endpoint accepts an UploadFile, validates the file extension, saves the content to a NamedTemporaryFile on disk (because IngestionPipeline expects a file path), runs the full ingestion pipeline using the shared DocumentStore and EmbeddingModel from the live RAGPipeline, then deletes the temp file. The shared store ensures new documents are immediately queryable.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q44",
+    "question": "How does the Streamlit UI display citation confidence?",
+    "ground_truth_answer": "The UI uses a traffic-light badge system. A composite score of 0.7+ displays HIGH in green, 0.4–0.7 displays MEDIUM in orange, and below 0.4 displays LOW in red. It also shows four individual metric values (composite, retrieval, citation coverage, completeness) using st.metric cards.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q45",
+    "question": "What is the hybrid vs. dense-only comparison feature in the Streamlit UI?",
+    "ground_truth_answer": "When the comparison toggle is enabled, the Streamlit UI runs the same question against the API twice — once with retrieval_mode='hybrid' (BM25 + dense + RRF) and once with retrieval_mode='dense_only' (embeddings only). Results are shown side-by-side, allowing users to see how retrieval mode affects the retrieved sources and the generated answer.",
+    "relevant_doc_ids": ["retrieval_augmented_generation", "hybrid_search"]
+  },
+  {
+    "id": "q46",
+    "question": "What does the dense_only retrieval mode do differently from hybrid mode?",
+    "ground_truth_answer": "In dense_only mode, the HybridRetriever skips BM25 sparse retrieval and Reciprocal Rank Fusion entirely. It queries ChromaDB using only the query embedding and returns the top_n results by cosine similarity. This is faster but misses exact keyword matches that BM25 would catch.",
+    "relevant_doc_ids": ["hybrid_search"]
+  },
+  {
+    "id": "q47",
+    "question": "How is the Docker Compose setup structured for this project?",
+    "ground_truth_answer": "The Docker Compose setup has three services: api (FastAPI on port 8000 with a health check), streamlit (Streamlit on port 8501, waits for api to be healthy), and seed (runs scripts/seed.py under the 'seed' profile, so it only runs when explicitly triggered with --profile seed). All services mount ./data as a volume to share the ChromaDB and BM25 indexes.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q48",
+    "question": "Why are HuggingFace models downloaded at Docker build time rather than at runtime?",
+    "ground_truth_answer": "Downloading models at build time bakes them into the image layer. This means containers start instantly without waiting for a network download on the first request. Without this, the first query after a cold container start would time out while the 90MB embedding model and cross-encoder reranker downloaded from the HuggingFace Hub.",
+    "relevant_doc_ids": ["retrieval_augmented_generation"]
+  },
+  {
+    "id": "q49",
+    "question": "Why is there no separate ChromaDB container in the Docker Compose setup?",
+    "ground_truth_answer": "ChromaDB's PersistentClient runs in-process — it reads and writes local files rather than making network calls to a server. Both the api and streamlit services share the same index by mounting the same ./data volume. A separate ChromaDB server container would add network latency and operational complexity with no benefit on a single machine.",
+    "relevant_doc_ids": ["vector_databases"]
+  },
+  {
+    "id": "q50",
+    "question": "What documents does the seed script index?",
+    "ground_truth_answer": "The seed script creates six markdown documents covering: Retrieval-Augmented Generation (pipeline stages, advantages), hybrid search (BM25, RRF, dense retrieval), vector databases (ChromaDB, HNSW, deduplication, comparisons), LLM evaluation (retrieval metrics, generation metrics, confidence scoring), LLM-as-judge evaluation (citation verification, faithfulness), and Groq/LLM APIs (speed, context window, prompt design, token costs).",
+    "relevant_doc_ids": ["retrieval_augmented_generation", "hybrid_search", "vector_databases", "llm_evaluation", "llm_as_judge", "groq_and_llms"]
+  },
+  {
+    "id": "q51",
+    "question": "What is the difference between Precision@K and Recall@K?",
+    "ground_truth_answer": "Precision@K measures what fraction of the K retrieved documents are actually relevant — it penalizes returning irrelevant results. Recall@K measures what fraction of all relevant documents were found in the top K — it penalizes missing relevant documents. High precision means few false positives; high recall means few false negatives.",
+    "relevant_doc_ids": ["llm_evaluation"]
+  },
+  {
+    "id": "q52",
+    "question": "What is hit rate in retrieval evaluation?",
+    "ground_truth_answer": "Hit rate is the fraction of queries where at least one relevant document appears in the top K retrieved results. Unlike MRR or NDCG, it does not consider how many relevant documents were found or at what rank — it is a binary pass/fail per query. Hit rate is useful as a quick sanity check on whether the retriever is finding anything relevant at all.",
+    "relevant_doc_ids": ["llm_evaluation"]
+  },
+  {
+    "id": "q53",
+    "question": "What properties make a good RAG evaluation dataset?",
+    "ground_truth_answer": "A good RAG evaluation dataset should have 50+ samples covering: simple factual questions (single-document answers), multi-hop questions (require synthesizing across documents), out-of-scope questions (correct answer is 'I don't know'), and adversarial questions (test hallucination resistance). Each sample needs a question, ground truth answer, and relevant_doc_ids.",
+    "relevant_doc_ids": ["llm_evaluation"]
+  },
+  {
+    "id": "q54",
+    "question": "Why is answer relevance a separate metric from faithfulness?",
+    "ground_truth_answer": "An answer can be faithful (only citing content from the context) yet not relevant (answering a different question than was asked). Conversely, an answer can address the question but include hallucinated claims not in the context. Measuring both separately identifies which component is failing: retrieval (wrong documents), faithfulness (hallucination), or relevance (off-topic generation).",
+    "relevant_doc_ids": ["llm_evaluation", "llm_as_judge"]
+  },
+  {
+    "id": "q55",
+    "question": "What is the Groq free tier limit and how does it affect development?",
+    "ground_truth_answer": "Groq's free tier allows approximately 6,000 tokens per minute for llama3-70b-8192. Since each RAG query uses 3,000–6,000 tokens (context + generation + verification), this limits development throughput to roughly 1–2 queries per minute. For evaluation runs with many samples, the skip_verification flag reduces token usage by skipping the per-citation judge calls.",
+    "relevant_doc_ids": ["groq_and_llms"]
   }
 ]
