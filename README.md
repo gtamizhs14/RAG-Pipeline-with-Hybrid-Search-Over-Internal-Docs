@@ -78,7 +78,8 @@ python ingest.py
 ```
 
 > **Just want to try it first?** Run the seed script instead — it generates
-> 6 sample documents about AI engineering and indexes them automatically:
+> 6 sample documents about AI engineering concepts (RAG, hybrid search,
+> vector databases, evaluation metrics) and indexes them automatically:
 > ```bash
 > python scripts/seed.py
 > ```
@@ -96,6 +97,22 @@ streamlit run streamlit_app.py
 ```
 
 Open **http://localhost:8501** in your browser.
+
+### 5. Ask questions
+
+Type a question about your documents in the text box and click **Ask**. Questions should be specific to the content you indexed — the pipeline only knows what's in your documents.
+
+Example questions if you used the seed corpus:
+- *"What are the three types of Haki?"*
+- *"How does Reciprocal Rank Fusion work?"*
+- *"What is the difference between a bi-encoder and a cross-encoder?"*
+
+**Sidebar options:**
+- **Top-N**: how many source chunks to retrieve (default 5)
+- **Use cross-encoder reranker**: improves precision, adds ~1s latency
+- **Skip citation verification**: faster responses, disables the verified/unverified badges
+- **Compare hybrid vs. dense-only**: runs your question twice and shows results side by side so you can see how much BM25 helps
+- **Show indexed documents**: lists every document currently in the index
 
 ---
 
