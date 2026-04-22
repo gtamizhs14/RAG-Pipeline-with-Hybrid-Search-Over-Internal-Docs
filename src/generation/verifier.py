@@ -21,8 +21,8 @@ WHY use groq_judge_model (not groq_model):
   The judge model can be the same model or a stronger one. Having a
   dedicated config key lets operators swap in a bigger model for judging
   (higher quality verdicts) while keeping generation fast with a smaller
-  model. Both default to llama3-70b-8192 so it's a no-op unless explicitly
-  configured.
+  model. Both default to llama-3.3-70b-versatile so it's a no-op unless
+  explicitly configured.
 
 WHY not fail on judge errors:
   If the judge call throws (rate limit, transient network error), we mark

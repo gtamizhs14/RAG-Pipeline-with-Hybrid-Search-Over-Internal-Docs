@@ -12,8 +12,8 @@ WHY a character-based truncation limit (max_context_chars):
   this layer to a specific tokenizer implementation. Characters are a reasonable
   proxy: llama3 uses ~4 characters per token on average English text. Setting
   max_context_chars=12000 keeps the context under ~3 000 tokens, leaving plenty
-  of headroom for the system prompt and generated answer within the 8 192-token
-  context window of llama3-70b-8192.
+  of headroom for the system prompt and generated answer within the model's
+  context window.
 
 WHY return used_results alongside the user message:
   The citation parser needs to know which chunks were actually included in the

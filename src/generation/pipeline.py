@@ -36,7 +36,7 @@ Interview question this answers:
   "Walk me through how a question becomes an answer in your RAG pipeline."
   Answer: The question hits HybridRetriever (dense + sparse → RRF → reranker,
   Phase 2). The top-5 chunks are numbered [1]–[5] and injected into a grounded
-  system prompt. Groq's llama3-70b generates an answer citing those numbers
+  system prompt. The LLM generates an answer citing those numbers
   inline. A regex parser extracts the cited numbers and maps them back to source
   metadata. A judge model then verifies each citation, and a composite confidence
   score is computed from retrieval quality, citation coverage, and completeness.

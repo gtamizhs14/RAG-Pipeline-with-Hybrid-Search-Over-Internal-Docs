@@ -136,7 +136,34 @@ class EvalRunner:
     def _eval_sample(self, sample: EvalSample) -> EvalResult:
         t0 = time.perf_counter()
 
-        # ── RAG pipeline call ─────────────────────────────────────────────────
+        if not self.eval_generation:
+            # Retrieval-only: call the retriever directly — no LLM calls.
+            sources = self.pipeline.retriever.retrieve(
+                sample.question, top_n=self.k
+            )
+            latency_ms = (time.perf_counter() - t0) * 1_000
+            retrieved_doc_ids = [r.doc_id for r in sources]
+            metrics = compute_all(retrieved_doc_ids, sample.relevant_doc_ids, self.k)
+            return EvalResult(
+                sample=sample,
+                retrieval=RetrievalEval(
+                    sample_id=sample.id,
+                    precision_at_k=metrics["precision_at_k"],
+                    recall_at_k=metrics["recall_at_k"],
+                    mrr=metrics["mrr"],
+                    ndcg_at_k=metrics["ndcg_at_k"],
+                    k=self.k,
+                    retrieved_doc_ids=retrieved_doc_ids,
+                    relevant_doc_ids=sample.relevant_doc_ids,
+                    hit=metrics["recall_at_k"] > 0.0,
+                ),
+                generation=None,
+                answer="",
+                latency_ms=round(latency_ms, 2),
+                confidence_composite=0.0,
+            )
+
+        # ── Full pipeline call (generation + optional gen metrics) ────────────
         # skip_verification=True avoids duplicate judge calls during eval.
         rag_response = self.pipeline.answer(
             question=sample.question,

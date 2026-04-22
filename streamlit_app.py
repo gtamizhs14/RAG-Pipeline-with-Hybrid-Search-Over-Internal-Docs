@@ -120,7 +120,7 @@ with st.sidebar:
             st.error(f"Cannot reach API: {e}")
 
     st.markdown("---")
-    st.caption("RAG Pipeline · Groq llama3-70b · ChromaDB + BM25")
+    st.caption("RAG Pipeline · llama-3.3-70b-versatile · ChromaDB + BM25")
 
 
 # ── Helper functions ──────────────────────────────────────────────────────────

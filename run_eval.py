@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 def _print_report(report) -> None:
-    sep = "─" * 60
+    sep = "-" * 60
     print(f"\n{sep}")
     print(f"  RAG Pipeline Evaluation Report")
     print(sep)

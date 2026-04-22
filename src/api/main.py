@@ -52,7 +52,7 @@ app = FastAPI(
     description=(
         "Hybrid search RAG pipeline with citation verification and confidence scoring. "
         "Uses Sentence Transformers for local embeddings, ChromaDB + BM25 for retrieval, "
-        "and Groq (llama3-70b-8192) for grounded generation."
+        "and any OpenAI-compatible LLM (default: Groq llama-3.3-70b-versatile) for grounded generation."
     ),
     version="1.0.0",
     lifespan=lifespan,
