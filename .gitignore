@@ -12,8 +12,7 @@ venv/
 .venv/
 env/
 
-data/chroma_db/
-data/bm25_index.pkl
+data/
 
 .DS_Store
 Thumbs.db
