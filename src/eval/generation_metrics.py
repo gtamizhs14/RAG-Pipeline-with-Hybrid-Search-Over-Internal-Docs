@@ -33,7 +33,7 @@ WHY 0.0–1.0 float instead of binary:
 import logging
 import re
 
-from src.generation.groq_client import GroqClient
+from src.generation.llm_client import LLMClient
 from src.config import settings
 
 logger = logging.getLogger(__name__)
@@ -74,8 +74,8 @@ def _parse_score_and_reason(reply: str, label: str) -> tuple[float, str]:
 
 class GenerationMetricsScorer:
 
-    def __init__(self, judge_client: GroqClient = None):
-        self._judge = judge_client or GroqClient(model=settings.groq_judge_model)
+    def __init__(self, judge_client: LLMClient = None):
+        self._judge = judge_client or LLMClient(model=settings.llm_judge_model)
 
     def faithfulness(
         self,

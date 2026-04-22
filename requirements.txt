@@ -15,7 +15,7 @@ chromadb>=0.5.3
 
 rank-bm25>=0.2.2
 
-groq>=0.9.0
+openai>=1.30.0
 
 streamlit>=1.36.0
 

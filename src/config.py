@@ -3,10 +3,18 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    # LLM
-    groq_api_key: str = Field(..., description="Groq API key")
-    groq_model: str = Field("llama3-70b-8192")
-    groq_judge_model: str = Field("llama3-70b-8192")
+    # LLM — any OpenAI-compatible provider (Groq, OpenAI, Ollama, Together AI…)
+    # Set LLM_BASE_URL + LLM_API_KEY + LLM_MODEL in .env to switch providers.
+    llm_api_key: str = Field(..., description="API key for the LLM provider")
+    llm_base_url: str = Field(
+        "https://api.groq.com/openai/v1",
+        description="OpenAI-compatible base URL for the LLM provider",
+    )
+    llm_model: str = Field("llama-3.3-70b-versatile", description="Model used for generation")
+    llm_judge_model: str = Field(
+        "llama-3.3-70b-versatile",
+        description="Model used as LLM-as-judge (can differ from generation model)",
+    )
 
     # Embeddings — runs locally, swap model name in .env to change
     embedding_model: str = Field("all-MiniLM-L6-v2")

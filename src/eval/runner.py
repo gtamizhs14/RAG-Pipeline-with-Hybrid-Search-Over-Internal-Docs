@@ -42,7 +42,7 @@ from src.eval.models import (
     RetrievalEval,
 )
 from src.eval.retrieval_metrics import compute_all
-from src.generation.groq_client import GroqClient
+from src.generation.llm_client import LLMClient
 from src.generation.pipeline import RAGPipeline
 from src.config import settings
 
@@ -84,7 +84,7 @@ class EvalRunner:
     def __init__(
         self,
         pipeline: RAGPipeline = None,
-        judge_client: GroqClient = None,
+        judge_client: LLMClient = None,
         k: int = None,
         eval_generation: bool = True,
     ):
@@ -92,7 +92,7 @@ class EvalRunner:
         Parameters
         ----------
         pipeline        : RAGPipeline instance (creates one with defaults if None)
-        judge_client    : GroqClient for generation metric scoring
+        judge_client    : LLMClient for generation metric scoring
         k               : top-k for retrieval metric computation (defaults to rerank_top_n)
         eval_generation : if False, skip faithfulness and answer relevance scoring
         """

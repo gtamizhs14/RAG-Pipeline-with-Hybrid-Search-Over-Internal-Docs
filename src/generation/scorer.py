@@ -41,7 +41,7 @@ Interview question this answers:
 import logging
 import re
 
-from src.generation.groq_client import GroqClient
+from src.generation.llm_client import LLMClient
 from src.generation.models import AnswerConfidence, VerifiedCitation
 from src.retrieval.models import SearchResult
 from src.config import settings
@@ -62,8 +62,8 @@ _SCORE_RE = re.compile(r"\b([01](?:\.\d+)?|\d?\.\d+)\b")
 
 class AnswerConfidenceScorer:
 
-    def __init__(self, judge_client: GroqClient = None):
-        self._judge = judge_client or GroqClient(model=settings.groq_judge_model)
+    def __init__(self, judge_client: LLMClient = None):
+        self._judge = judge_client or LLMClient(model=settings.llm_judge_model)
 
     def score(
         self,

@@ -47,7 +47,7 @@ import time
 
 from src.config import settings
 from src.generation.citations import CitationParser
-from src.generation.groq_client import GroqClient
+from src.generation.llm_client import LLMClient
 from src.generation.models import AnswerConfidence, RAGResponse, VerifiedCitation
 from src.generation.prompt import SYSTEM_PROMPT, PromptBuilder
 from src.generation.scorer import AnswerConfidenceScorer
@@ -72,24 +72,24 @@ class RAGPipeline:
         self,
         store: DocumentStore = None,
         embedder: EmbeddingModel = None,
-        groq_client: GroqClient = None,
-        judge_client: GroqClient = None,
+        llm_client: LLMClient = None,
+        judge_client: LLMClient = None,
     ):
         shared_store = store or DocumentStore()
         shared_embedder = embedder or EmbeddingModel()
-        shared_groq = groq_client or GroqClient()
+        shared_llm = llm_client or LLMClient()
         # Judge can share the same client instance when models are identical.
         shared_judge = judge_client or (
-            shared_groq
-            if settings.groq_judge_model == settings.groq_model
-            else GroqClient(model=settings.groq_judge_model)
+            shared_llm
+            if settings.llm_judge_model == settings.llm_model
+            else LLMClient(model=settings.llm_judge_model)
         )
 
         self.store = shared_store
         self.embedder = shared_embedder
         self.retriever = HybridRetriever(store=shared_store, embedder=shared_embedder)
         self.prompt_builder = PromptBuilder(max_context_chars=settings.max_context_chars)
-        self.groq_client = shared_groq
+        self.llm_client = shared_llm
         self.citation_parser = CitationParser()
         self.verifier = CitationVerifier(judge_client=shared_judge)
         self.scorer = AnswerConfidenceScorer(judge_client=shared_judge)
@@ -159,7 +159,7 @@ class RAGPipeline:
                 all_sources=results,
                 confidence=zero_conf,
                 latency_ms=round(latency_ms, 2),
-                model=self.groq_client.model,
+                model=self.llm_client.model,
             )
 
         # ── Stage 2: prompt construction ──────────────────────────────────────
@@ -167,7 +167,7 @@ class RAGPipeline:
         logger.info(f"Stage 2 — prompt built with {len(used_results)} chunks")
 
         # ── Stage 3: LLM generation ───────────────────────────────────────────
-        answer_text = self.groq_client.complete(
+        answer_text = self.llm_client.complete(
             system=SYSTEM_PROMPT,
             user=user_message,
         )
@@ -222,5 +222,5 @@ class RAGPipeline:
             all_sources=results,
             confidence=confidence,
             latency_ms=round(latency_ms, 2),
-            model=self.groq_client.model,
+            model=self.llm_client.model,
         )
