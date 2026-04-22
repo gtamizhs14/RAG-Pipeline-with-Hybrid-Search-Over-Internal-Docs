@@ -77,12 +77,18 @@ Then run the ingestion pipeline to index them:
 python ingest.py
 ```
 
-> **Just want to try it first?** Run the seed script instead — it generates
-> 6 sample documents about AI engineering concepts (RAG, hybrid search,
-> vector databases, evaluation metrics) and indexes them automatically:
+> **Just want to try it first?** Use the included sample corpus in
+> [`scripts/seed_corpus/`](scripts/seed_corpus/) — 5 documents covering
+> One Piece characters, Devil Fruits, Haki, story arcs, and the world/factions.
+> Copy them into the index with:
 > ```bash
 > python scripts/seed.py
 > ```
+> Then ask questions like:
+> - *"What is Gear 5 and how did Luffy unlock it?"*
+> - *"What are the three types of Haki?"*
+> - *"How does Blackbeard have two Devil Fruit powers?"*
+> - *"What happened at Marineford?"*
 
 ### 4. Start the servers
 
@@ -104,8 +110,9 @@ Type a question about your documents in the text box and click **Ask**. Question
 
 Example questions if you used the seed corpus:
 - *"What are the three types of Haki?"*
-- *"How does Reciprocal Rank Fusion work?"*
-- *"What is the difference between a bi-encoder and a cross-encoder?"*
+- *"How does Blackbeard have two Devil Fruit powers?"*
+- *"What happened at Marineford?"*
+- *"Who are the Four Emperors after Wano?"*
 
 **Sidebar options:**
 - **Top-N**: how many source chunks to retrieve (default 5)
