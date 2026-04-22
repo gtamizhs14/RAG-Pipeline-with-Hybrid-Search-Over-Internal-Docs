@@ -1,10 +1,66 @@
 version: "3.9"
 
+# WHY one shared image for api and streamlit:
+#   Both services need the same Python environment (src/, models, deps).
+#   Building one image and overriding CMD is faster than maintaining two
+#   Dockerfiles that would diverge over time.
+#
+# WHY mount ./data as a volume:
+#   ChromaDB writes a persistent index to data/chroma_db/ and BM25 writes
+#   data/bm25_index.pkl. A named volume would work too, but a host bind-mount
+#   lets the developer inspect the index files directly and persist them across
+#   `docker compose down` without --volumes.
+#
+# WHY no separate ChromaDB container:
+#   ChromaDB's PersistentClient runs in-process — it reads and writes local
+#   files rather than making network calls. Both services share the same
+#   index by mounting the same ./data volume. A separate ChromaDB server
+#   container would add latency and operational complexity for no benefit
+#   in a single-machine deployment.
+
 services:
-  app:
+  api:
     build: .
+    ports:
+      - "8000:8000"
     volumes:
       - ./data:/app/data
-      - ./.env:/app/.env
+    env_file:
+      - .env
     environment:
       - PYTHONPATH=/app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  streamlit:
+    build: .
+    command: ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app
+      - API_BASE_URL=http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+
+  seed:
+    build: .
+    command: ["python", "scripts/seed.py"]
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app
+    # Run once and exit — use `docker compose run seed` to re-seed
+    profiles:
+      - seed

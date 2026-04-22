@@ -13,7 +13,13 @@ WHY include confidence breakdown in QueryResponse:
   components to render a meaningful confidence indicator. A single composite
   float hides whether low confidence came from poor retrieval or a hallucinating
   LLM — the breakdown tells the operator which lever to pull.
+
+WHY retrieval_mode as a string enum rather than a bool:
+  A bool "dense_only" would make adding a third mode (e.g. "sparse_only")
+  a breaking API change. A string mode field extends cleanly.
 """
+
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -24,6 +30,10 @@ class QueryRequest(BaseModel):
     top_n: int | None = Field(None, ge=1, le=20, description="Final chunks after reranking")
     use_reranker: bool | None = Field(None, description="Override reranker toggle")
     skip_verification: bool = Field(False, description="Skip LLM-as-judge citation check (faster)")
+    retrieval_mode: Literal["hybrid", "dense_only"] = Field(
+        "hybrid",
+        description="'hybrid' uses BM25 + dense + RRF; 'dense_only' skips sparse search",
+    )
 
 
 class SourceSchema(BaseModel):
@@ -51,8 +61,30 @@ class QueryResponse(BaseModel):
     confidence: ConfidenceSchema
     latency_ms: float
     model: str
+    retrieval_mode: str
 
 
 class HealthResponse(BaseModel):
     status: str
     pipeline_ready: bool
+
+
+class DocumentInfo(BaseModel):
+    doc_id: str
+    source: str
+    chunk_count: int
+
+
+class DocumentListResponse(BaseModel):
+    total_documents: int
+    total_chunks: int
+    documents: list[DocumentInfo]
+
+
+class IngestResponse(BaseModel):
+    documents_loaded: int
+    chunks_created: int
+    chunks_added: int
+    chunks_skipped_duplicate: int
+    total_chunks_in_store: int
+    errors: list[str]

@@ -148,3 +148,22 @@ class DocumentStore:
             "chroma_count": self.collection.count(),
             "bm25_count": len(bm25_data["doc_ids"]),
         }
+
+    def list_documents(self) -> list[dict]:
+        """Return one record per unique source document (grouped by doc_id)."""
+        if self.collection.count() == 0:
+            return []
+
+        result = self.collection.get(include=["metadatas"])
+        seen: dict[str, dict] = {}
+        for meta in result["metadatas"]:
+            doc_id = meta.get("doc_id", "")
+            if doc_id not in seen:
+                seen[doc_id] = {
+                    "doc_id": doc_id,
+                    "source": meta.get("source", ""),
+                    "chunk_count": 1,
+                }
+            else:
+                seen[doc_id]["chunk_count"] += 1
+        return list(seen.values())

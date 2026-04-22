@@ -85,6 +85,8 @@ class RAGPipeline:
             else GroqClient(model=settings.groq_judge_model)
         )
 
+        self.store = shared_store
+        self.embedder = shared_embedder
         self.retriever = HybridRetriever(store=shared_store, embedder=shared_embedder)
         self.prompt_builder = PromptBuilder(max_context_chars=settings.max_context_chars)
         self.groq_client = shared_groq
@@ -99,6 +101,7 @@ class RAGPipeline:
         top_n: int = None,
         use_reranker: bool = None,
         skip_verification: bool = False,
+        dense_only: bool = False,
     ) -> RAGResponse:
         """
         Run the full RAG pipeline for a single question.
@@ -111,6 +114,8 @@ class RAGPipeline:
         use_reranker      : override reranker flag for this call only
         skip_verification : if True, skip LLM-as-judge verification and scoring
                             (faster; useful for high-throughput eval runs)
+        dense_only        : skip BM25 + RRF, use raw dense retrieval only
+                            (enables hybrid vs. dense A/B comparison in the UI)
 
         Returns
         -------
@@ -125,6 +130,7 @@ class RAGPipeline:
             top_k=top_k,
             top_n=top_n,
             use_reranker=use_reranker,
+            dense_only=dense_only,
         )
         logger.info(f"Stage 1 — retrieved {len(results)} chunks")
 

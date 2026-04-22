@@ -8,9 +8,11 @@ The UI calls the FastAPI backend at API_BASE_URL (default: http://localhost:8000
 Set the API_BASE_URL environment variable to point at a deployed instance.
 
 Layout:
-  Sidebar   — settings (top-k, reranker toggle, verification toggle, API URL)
+  Sidebar   — settings (top-k, reranker toggle, verification toggle,
+              retrieval mode, API URL)
   Main area — question input, answer with highlighted citations, confidence
               traffic-light, collapsible source cards
+              Comparison mode: hybrid vs. dense-only results side-by-side
 """
 
 import os
@@ -22,6 +24,7 @@ import streamlit as st
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000").rstrip("/")
 QUERY_URL = f"{API_BASE_URL}/api/v1/query"
 HEALTH_URL = f"{API_BASE_URL}/api/v1/health"
+DOCS_URL = f"{API_BASE_URL}/api/v1/documents"
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -44,6 +47,7 @@ st.markdown(
     .verified-no    { color: #e74c3c; }
     .verified-unk   { color: #95a5a6; }
     .source-card    { border-left: 3px solid #3498db; padding-left: 0.75em; margin-bottom: 0.5em; }
+    .source-card-dense { border-left: 3px solid #e67e22; padding-left: 0.75em; margin-bottom: 0.5em; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -58,12 +62,34 @@ with st.sidebar:
         API_BASE_URL = api_url_input.rstrip("/")
         QUERY_URL = f"{API_BASE_URL}/api/v1/query"
         HEALTH_URL = f"{API_BASE_URL}/api/v1/health"
+        DOCS_URL = f"{API_BASE_URL}/api/v1/documents"
 
     st.divider()
 
     top_n = st.slider("Top-N results (reranked)", min_value=1, max_value=10, value=5)
     use_reranker = st.toggle("Use cross-encoder reranker", value=True)
     skip_verification = st.toggle("Skip citation verification (faster)", value=False)
+
+    st.divider()
+
+    st.subheader("Retrieval Mode")
+    compare_mode = st.toggle(
+        "Compare hybrid vs. dense-only",
+        value=False,
+        help=(
+            "Run the same question with hybrid search (BM25 + dense + RRF) "
+            "AND dense-only search, then show results side-by-side."
+        ),
+    )
+    if not compare_mode:
+        retrieval_mode = st.radio(
+            "Mode",
+            options=["hybrid", "dense_only"],
+            format_func=lambda x: "Hybrid (BM25 + dense + RRF)" if x == "hybrid" else "Dense-only (embeddings)",
+            index=0,
+        )
+    else:
+        retrieval_mode = "hybrid"
 
     st.divider()
 
@@ -76,6 +102,20 @@ with st.sidebar:
                 st.success("API is healthy and pipeline is ready")
             else:
                 st.warning("API is up but pipeline is not ready")
+        except Exception as e:
+            st.error(f"Cannot reach API: {e}")
+
+    if st.button("Show indexed documents"):
+        try:
+            r = requests.get(DOCS_URL, timeout=10)
+            r.raise_for_status()
+            doc_data = r.json()
+            st.info(
+                f"{doc_data['total_documents']} documents · "
+                f"{doc_data['total_chunks']} chunks"
+            )
+            for doc in doc_data["documents"]:
+                st.caption(f"• {doc['source']} ({doc['chunk_count']} chunks)")
         except Exception as e:
             st.error(f"Cannot reach API: {e}")
 
@@ -113,12 +153,13 @@ def _highlight_citations(answer: str, num_sources: int) -> str:
     return re.sub(r"\[(\d+)\]", replace, answer)
 
 
-def _call_api(question: str) -> dict | None:
+def _call_api(question: str, mode: str) -> dict | None:
     payload = {
         "question": question,
         "top_n": top_n,
         "use_reranker": use_reranker,
         "skip_verification": skip_verification,
+        "retrieval_mode": mode,
     }
     try:
         r = requests.post(QUERY_URL, json=payload, timeout=120)
@@ -139,6 +180,55 @@ def _call_api(question: str) -> dict | None:
         return None
 
 
+def _render_result(data: dict, card_class: str = "source-card") -> None:
+    """Render answer, confidence metrics, and source cards for one result set."""
+    st.subheader("Answer")
+    highlighted = _highlight_citations(data["answer"], len(data["cited_sources"]))
+    st.markdown(highlighted, unsafe_allow_html=True)
+
+    conf = data["confidence"]
+    st.markdown("---")
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Composite", f"{conf['composite_score']:.2f}")
+    with col2:
+        st.metric("Retrieval", f"{conf['retrieval_confidence']:.2f}")
+    with col3:
+        st.metric("Citation", f"{conf['citation_coverage']:.2f}")
+    with col4:
+        st.metric("Completeness", f"{conf['completeness_score']:.2f}")
+
+    st.markdown(
+        f"Confidence: {_confidence_badge(conf['composite_score'])}",
+        unsafe_allow_html=True,
+    )
+
+    if data["cited_sources"]:
+        st.markdown("---")
+        st.subheader(f"Sources ({len(data['cited_sources'])})")
+        for src in data["cited_sources"]:
+            with st.expander(
+                f"[{src['citation_number']}] {src['source']}  —  "
+                f"score: {src['score']:.3f}",
+                expanded=False,
+            ):
+                ver_html = _verification_icon(src["verified"])
+                st.markdown(
+                    f"**Status:** {ver_html}  \n"
+                    f"**Reason:** {src['verification_reason']}",
+                    unsafe_allow_html=True,
+                )
+                st.markdown(
+                    f'<div class="{card_class}">{src["content"]}</div>',
+                    unsafe_allow_html=True,
+                )
+
+    st.caption(
+        f"Model: {data['model']} · Latency: {data['latency_ms']:.0f} ms · "
+        f"Mode: {data['retrieval_mode']}"
+    )
+
+
 # ── Main area ─────────────────────────────────────────────────────────────────
 st.title("RAG Pipeline — Document Q&A")
 st.caption(
@@ -155,56 +245,33 @@ question = st.text_area(
 ask_btn = st.button("Ask", type="primary", use_container_width=True)
 
 if ask_btn and question.strip():
-    with st.spinner("Retrieving and generating…"):
-        data = _call_api(question.strip())
+    if compare_mode:
+        # ── Side-by-side comparison: hybrid vs. dense-only ────────────────────
+        with st.spinner("Running hybrid and dense-only retrieval for comparison…"):
+            hybrid_data = _call_api(question.strip(), "hybrid")
+            dense_data = _call_api(question.strip(), "dense_only")
 
-    if data:
-        # ── Answer ────────────────────────────────────────────────────────────
-        st.subheader("Answer")
-        highlighted = _highlight_citations(data["answer"], len(data["cited_sources"]))
-        st.markdown(highlighted, unsafe_allow_html=True)
+        if hybrid_data or dense_data:
+            left, right = st.columns(2)
+            with left:
+                st.markdown("### Hybrid (BM25 + dense + RRF)")
+                if hybrid_data:
+                    _render_result(hybrid_data, card_class="source-card")
+                else:
+                    st.error("Hybrid query failed.")
+            with right:
+                st.markdown("### Dense-only (embeddings)")
+                if dense_data:
+                    _render_result(dense_data, card_class="source-card-dense")
+                else:
+                    st.error("Dense-only query failed.")
+    else:
+        # ── Single-mode query ─────────────────────────────────────────────────
+        with st.spinner("Retrieving and generating…"):
+            data = _call_api(question.strip(), retrieval_mode)
 
-        # ── Confidence ────────────────────────────────────────────────────────
-        conf = data["confidence"]
-        st.markdown("---")
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Composite Confidence", f"{conf['composite_score']:.2f}")
-        with col2:
-            st.metric("Retrieval Quality", f"{conf['retrieval_confidence']:.2f}")
-        with col3:
-            st.metric("Citation Coverage", f"{conf['citation_coverage']:.2f}")
-        with col4:
-            st.metric("Completeness", f"{conf['completeness_score']:.2f}")
-
-        # Traffic-light badge
-        st.markdown(
-            f"Confidence level: {_confidence_badge(conf['composite_score'])}",
-            unsafe_allow_html=True,
-        )
-
-        # ── Cited sources ─────────────────────────────────────────────────────
-        if data["cited_sources"]:
-            st.markdown("---")
-            st.subheader(f"Sources ({len(data['cited_sources'])})")
-            for src in data["cited_sources"]:
-                with st.expander(
-                    f"[{src['citation_number']}] {src['source']}  —  "
-                    f"score: {src['score']:.3f}",
-                    expanded=False,
-                ):
-                    ver_html = _verification_icon(src["verified"])
-                    st.markdown(
-                        f"**Status:** {ver_html}  \n"
-                        f"**Reason:** {src['verification_reason']}",
-                        unsafe_allow_html=True,
-                    )
-                    st.markdown(f'<div class="source-card">{src["content"]}</div>', unsafe_allow_html=True)
-
-        # ── Meta ──────────────────────────────────────────────────────────────
-        st.caption(
-            f"Model: {data['model']} · Latency: {data['latency_ms']:.0f} ms"
-        )
+        if data:
+            _render_result(data)
 
 elif ask_btn and not question.strip():
     st.warning("Please enter a question.")

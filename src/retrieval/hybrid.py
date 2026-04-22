@@ -73,6 +73,7 @@ class HybridRetriever:
         shared_store = store or DocumentStore()
         shared_embedder = embedder or EmbeddingModel()
 
+        self.store = shared_store
         self.dense = DenseRetriever(store=shared_store, embedder=shared_embedder)
         self.sparse = SparseRetriever(store=shared_store)
         self.reranker = CrossEncoderReranker()
@@ -88,6 +89,7 @@ class HybridRetriever:
         top_k: int = None,
         top_n: int = None,
         use_reranker: bool = None,
+        dense_only: bool = False,
     ) -> list[SearchResult]:
         """
         Run the full hybrid retrieval pipeline and return final results.
@@ -98,10 +100,18 @@ class HybridRetriever:
         top_k       : candidates fetched from each retriever (pre-fusion count)
         top_n       : final results returned after reranking
         use_reranker: override the instance default for this call only
+        dense_only  : skip BM25 and RRF, return raw dense results only
+                      (useful for A/B comparison against full hybrid mode)
         """
         top_k = top_k if top_k is not None else settings.retrieval_top_k
         top_n = top_n if top_n is not None else settings.rerank_top_n
         do_rerank = use_reranker if use_reranker is not None else self._use_reranker
+
+        # ── Dense-only shortcut ───────────────────────────────────────────────
+        if dense_only:
+            dense_results = self.dense.retrieve(query, top_k=top_n)
+            logger.info(f"dense_only — {len(dense_results)} results")
+            return dense_results
 
         # ── Stage 1: candidate retrieval ─────────────────────────────────────
         # Both retrievers run sequentially here. In a high-traffic production
