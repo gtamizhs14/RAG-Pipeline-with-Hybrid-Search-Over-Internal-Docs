@@ -58,17 +58,30 @@ LLM_MODEL=llama3
 
 ### 3. Add your documents
 
-Drop `.txt`, `.md`, `.pdf`, or `.html` files into `data/raw/`, then ingest:
+The folder `data/raw/` is where your documents go. It already exists in the repo — just drop files in:
+
+```
+rag-pipeline/
+└── data/
+    └── raw/          ← PUT YOUR FILES HERE
+        ├── my_report.pdf
+        ├── internal_wiki.md
+        └── product_manual.html
+```
+
+Supported formats: `.txt` `.md` `.pdf` `.html`
+
+Then run the ingestion pipeline to index them:
 
 ```bash
 python ingest.py
 ```
 
-Or use the sample AI engineering corpus to try the pipeline immediately:
-
-```bash
-python scripts/seed.py
-```
+> **Just want to try it first?** Run the seed script instead — it generates
+> 6 sample documents about AI engineering and indexes them automatically:
+> ```bash
+> python scripts/seed.py
+> ```
 
 ### 4. Start the servers
 

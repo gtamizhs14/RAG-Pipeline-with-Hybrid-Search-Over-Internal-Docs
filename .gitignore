@@ -12,7 +12,10 @@ venv/
 .venv/
 env/
 
-data/
+data/*
+!data/raw/
+data/raw/*
+!data/raw/.gitkeep
 
 .DS_Store
 Thumbs.db
