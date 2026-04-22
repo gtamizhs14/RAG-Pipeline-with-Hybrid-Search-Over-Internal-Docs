@@ -196,9 +196,29 @@ Results on the included 55-question evaluation dataset (retrieval-only, no LLM c
 | Metric | Score |
 |--------|-------|
 | Precision@5 | 0.658 |
-| MRR | 0.982 |
+| MRR | **0.982** |
 | NDCG@5 | 1.952 |
 | Hit Rate | **1.000** |
+
+Run the chunking strategy comparison to benchmark all three strategies:
+
+```bash
+python scripts/compare_chunking.py
+python scripts/compare_chunking.py --output results/chunking_comparison.json
+```
+
+Results across strategies (55 questions, k=5):
+
+| Metric | fixed\_size | recursive\_header | semantic |
+|--------|------------|------------------|---------|
+| Chunks | 53 | 67 | 90 |
+| Precision@5 | 0.658 | 0.651 | **0.680** |
+| MRR | **0.982** | 0.979 | 0.970 |
+| NDCG@5 | 1.952 | 1.918 | **1.989** |
+| Hit Rate | **1.000** | **1.000** | **1.000** |
+| Latency/q (ms) | **169** | 174 | 208 |
+
+`semantic` wins on precision and NDCG; `fixed_size` wins on MRR and latency. All three achieve 100% hit rate on this corpus.
 
 ---
 

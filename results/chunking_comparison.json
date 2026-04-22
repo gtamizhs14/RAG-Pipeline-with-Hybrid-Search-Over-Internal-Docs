@@ -1,0 +1,35 @@
+[
+  {
+    "strategy": "fixed_size",
+    "k": 5,
+    "chunks_indexed": 53,
+    "precision_at_k": 0.6582,
+    "recall_at_k": 2.9061,
+    "mrr": 0.9818,
+    "ndcg_at_k": 1.9516,
+    "hit_rate": 1.0,
+    "mean_latency_ms": 169.0
+  },
+  {
+    "strategy": "recursive_header",
+    "k": 5,
+    "chunks_indexed": 67,
+    "precision_at_k": 0.6509,
+    "recall_at_k": 2.8697,
+    "mrr": 0.9788,
+    "ndcg_at_k": 1.9178,
+    "hit_rate": 1.0,
+    "mean_latency_ms": 173.8
+  },
+  {
+    "strategy": "semantic",
+    "k": 5,
+    "chunks_indexed": 90,
+    "precision_at_k": 0.68,
+    "recall_at_k": 3.0333,
+    "mrr": 0.9697,
+    "ndcg_at_k": 1.9891,
+    "hit_rate": 1.0,
+    "mean_latency_ms": 207.7
+  }
+]
